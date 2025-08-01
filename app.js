@@ -37,7 +37,7 @@ app.use("/api", recruiterAuthRoutes);
 // Legacy routes for backward compatibility
 app.use("/", userRoutes); // Legacy routes without /api prefix
 app.use("/", jobRoutes); // Legacy internship routes
-app.use("/", (req, res) => {
+app.use("/health", (req, res) => {
   res.status(200).json({ message: "Backend is Working" });
 });
 // 404 handler
