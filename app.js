@@ -24,6 +24,7 @@ const recruiterAuthRoutes = require("./routes/recruiterAuth");
 setupMiddleware(app);
 
 // API routes
+app.get("/favicon.ico", (req, res) => res.status(204).end());
 app.use("/api", indexRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/jobs", jobRoutes);
@@ -36,7 +37,6 @@ app.use("/api", recruiterAuthRoutes);
 // Legacy routes for backward compatibility
 app.use("/", userRoutes); // Legacy routes without /api prefix
 app.use("/", jobRoutes); // Legacy internship routes
-app.get("/favicon.ico", (req, res) => res.status(204).end());
 // 404 handler
 app.use(notFound);
 
