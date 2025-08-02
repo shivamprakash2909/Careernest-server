@@ -12,6 +12,7 @@ const corsOptions = {
 // Global middleware setup
 const setupMiddleware = (app) => {
   // CORS
+  console.log("Setting up CORS with options:", corsOptions);
   app.use(cors(corsOptions));
 
   // Body parsing
