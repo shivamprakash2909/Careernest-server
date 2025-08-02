@@ -47,7 +47,6 @@ router.get("/admin/all", async (req, res, next) => {
 // Legacy routes for backward compatibility - MUST BE BEFORE /:id route
 // Get all internships (legacy - using Internship model)
 router.get("/internships", async (req, res, next) => {
-  console.log("req", req);
   try {
     const { posted_by } = req.query;
     const filter = {};
