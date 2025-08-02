@@ -25,9 +25,6 @@ setupMiddleware(app);
 
 // API routes
 app.get("/favicon.ico", (req, res) => res.status(204).end());
-app.get("/health", (req, res) => {
-  res.status(200).json({ message: "Backend is Working" });
-});
 app.use("/api", indexRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/jobs", jobRoutes);
