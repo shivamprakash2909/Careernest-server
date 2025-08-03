@@ -302,4 +302,90 @@ router.get("/applicant/:email", async (req, res, next) => {
   }
 });
 
+// Get applications for recruiter's posted jobs and internships
+router.get("/recruiter/applications", authenticateJWT, async (req, res, next) => {
+  try {
+    // Check if user is a recruiter
+    if (req.user.role !== "recruiter" && req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only recruiters can access this endpoint" });
+    }
+
+    const recruiterEmail = req.user.email;
+    const { status, application_type } = req.query;
+
+    let filter = {};
+
+    // Filter by status if provided
+    if (status) filter.status = status;
+
+    // Filter by application type if provided
+    if (application_type) filter.application_type = application_type;
+
+    // Get all jobs posted by this recruiter
+    const recruiterJobs = await Job.find({ posted_by: recruiterEmail }).select("_id");
+    const recruiterJobIds = recruiterJobs.map((job) => job._id);
+
+    // Get all internships posted by this recruiter
+    const recruiterInternships = await Internship.find({ posted_by: recruiterEmail }).select("_id");
+    const recruiterInternshipIds = recruiterInternships.map((internship) => internship._id);
+
+    // Find applications for recruiter's jobs and internships
+    const jobApplications = await Application.find({
+      ...filter,
+      job_id: { $in: recruiterJobIds },
+      application_type: "job",
+    }).populate({
+      path: "job_id",
+      select: "title position company location salary status type posted_by company_logo",
+    });
+
+    const internshipApplications = await Application.find({
+      ...filter,
+      internship_id: { $in: recruiterInternshipIds },
+      application_type: "internship",
+    }).populate({
+      path: "internship_id",
+      select: "title position company location stipend duration status posted_by company_logo",
+    });
+
+    // Combine and transform the applications
+    const allApplications = [...jobApplications, ...internshipApplications];
+
+    const transformedApplications = allApplications.map((app) => {
+      const source = app.application_type === "job" ? app.job_id : app.internship_id;
+      return {
+        _id: app._id,
+        application_type: app.application_type,
+        status: app.status,
+        created_date: app.created_date,
+        applicant_name: app.applicant_name,
+        applicant_email: app.applicant_email,
+        company_name: app.company_name || source?.company,
+        company_logo: app.company_logo || source?.company_logo,
+        position: source?.position,
+        location: source?.location,
+        title: source?.title,
+        // Include other relevant fields from job/internship
+        ...(app.application_type === "job"
+          ? {
+              salary: source?.salary,
+              job_id: source?._id,
+            }
+          : {
+              stipend: source?.stipend,
+              duration: source?.duration,
+              internship_id: source?._id,
+            }),
+      };
+    });
+
+    // Sort by creation date (newest first)
+    transformedApplications.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+
+    res.json(transformedApplications);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
