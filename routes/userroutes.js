@@ -24,9 +24,7 @@ router.post("/register", async (req, res, next) => {
     } = req.body;
 
     if (!email || !password || !role) {
-      return res
-        .status(400)
-        .json({ error: "Email, password and role are required." });
+      return res.status(400).json({ error: "Email, password and role are required." });
     }
 
     // Check for duplicate email
@@ -86,9 +84,7 @@ router.post("/login", async (req, res, next) => {
     const { email, password, role } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Email and password are required." });
+      return res.status(400).json({ error: "Email and password are required." });
     }
 
     const query = role ? { email, role } : { email };

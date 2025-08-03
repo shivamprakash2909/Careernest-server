@@ -9,8 +9,8 @@ const router = express.Router();
 router.get("/", async (req, res, next) => {
   try {
     // Check if this is an admin request
-    const isAdminRequest = req.headers['x-admin-auth'] === 'true';
-    
+    const isAdminRequest = req.headers["x-admin-auth"] === "true";
+
     // If admin request, bypass authentication
     if (!isAdminRequest) {
       // Use the original authenticateJWT middleware
@@ -18,8 +18,8 @@ router.get("/", async (req, res, next) => {
     }
 
     // For admin requests, create a mock user object
-    req.user = { role: 'admin', email: 'admin@careernest.com' };
-    
+    req.user = { role: "admin", email: "admin@careernest.com" };
+
     const { status, applicant_email, job_id, internship_id, application_type } = req.query;
     let filter = {};
 
@@ -161,8 +161,8 @@ router.post("/", authenticateJWT, async (req, res, next) => {
 router.patch("/:id/status", async (req, res, next) => {
   try {
     // Check if this is an admin request
-    const isAdminRequest = req.headers['x-admin-auth'] === 'true';
-    
+    const isAdminRequest = req.headers["x-admin-auth"] === "true";
+
     // If admin request, bypass authentication
     if (!isAdminRequest) {
       // Use the original authenticateJWT middleware
@@ -170,8 +170,8 @@ router.patch("/:id/status", async (req, res, next) => {
     }
 
     // For admin requests, create a mock user object
-    req.user = { role: 'admin', email: 'admin@careernest.com' };
-    
+    req.user = { role: "admin", email: "admin@careernest.com" };
+
     const { status } = req.body;
     const application = await Application.findByIdAndUpdate(
       req.params.id,
