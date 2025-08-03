@@ -159,34 +159,6 @@ router.post("/", authenticateJWT, async (req, res, next) => {
   }
 });
 
-// Update job/internship
-router.put("/:id", authenticateJWT, async (req, res, next) => {
-  try {
-    // Find the job first to check ownership
-    const job = await Job.findById(req.params.id);
-    if (!job) {
-      return res.status(404).json({ error: "Job not found" });
-    }
-
-    // Only allow the recruiter who posted the job to update it
-    if (job.posted_by !== req.user.email) {
-      return res.status(403).json({ error: "You can only update jobs you posted" });
-    }
-
-    const updatedJob = await Job.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    res.json({
-      message: "Job updated successfully",
-      job: updatedJob,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
 // Admin approval endpoint
 router.put("/:id/approve", async (req, res, next) => {
   try {
@@ -214,6 +186,34 @@ router.put("/:id/approve", async (req, res, next) => {
     res.json({
       message: `Job ${approval_status} successfully`,
       job,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Update job/internship
+router.put("/:id", authenticateJWT, async (req, res, next) => {
+  try {
+    // Find the job first to check ownership
+    const job = await Job.findById(req.params.id);
+    if (!job) {
+      return res.status(404).json({ error: "Job not found" });
+    }
+
+    // Only allow the recruiter who posted the job to update it
+    if (job.posted_by !== req.user.email) {
+      return res.status(403).json({ error: "You can only update jobs you posted" });
+    }
+
+    const updatedJob = await Job.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.json({
+      message: "Job updated successfully",
+      job: updatedJob,
     });
   } catch (error) {
     next(error);

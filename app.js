@@ -24,7 +24,7 @@ const recruiterAuthRoutes = require("./routes/recruiterAuth");
 setupMiddleware(app);
 
 // API routes
-app.get("/favicon.ico", (req, res) => res.status(204).end());
+// app.get("/favicon.ico", (req, res) => res.status(204).end());
 app.use("/api", indexRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/jobs", jobRoutes);
