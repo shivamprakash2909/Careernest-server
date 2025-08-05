@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema(
     },
     field_of_study: { type: String, trim: true },
     graduation_year: { type: String, trim: true },
+    collegeName: { type: String, trim: true },
+    programme: { type: String, trim: true },
+    branch: { type: String, trim: true },
+    year: { type: String, trim: true },
     skills: [{ type: String, trim: true }], // Array of skills
     experience: { type: String, trim: true },
     bio: { type: String, trim: true, maxlength: 1000 },
@@ -75,6 +79,9 @@ const userSchema = new mongoose.Schema(
     github: { type: String, trim: true },
     linkedin: { type: String, trim: true },
     portfolio: { type: String, trim: true },
+    facebook: { type: String, trim: true },
+    instagram: { type: String, trim: true },
+    twitter: { type: String, trim: true },
     about: { type: String, trim: true, maxlength: 500 },
     image: { type: String, trim: true }, // URL or base64
 
