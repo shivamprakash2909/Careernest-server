@@ -125,6 +125,100 @@ router.delete("/internships/:id", authenticateJWT, async (req, res, next) => {
   }
 });
 
+// Analytics endpoint for recruiter
+router.get("/analytics", authenticateJWT, async (req, res, next) => {
+  try {
+    const recruiterEmail = req.user.email;
+
+    // Get all jobs and internships posted by this recruiter
+    const jobs = await Job.find({ posted_by: recruiterEmail });
+    const Internship = require("../models/Internship");
+    const internships = await Internship.find({ posted_by: recruiterEmail });
+
+    // Get all applications for jobs and internships posted by this recruiter
+    const Application = require("../models/Application");
+    const jobApplications = await Application.find({
+      job_id: { $in: jobs.map((job) => job._id) },
+    }).populate("job_id");
+
+    const internshipApplications = await Application.find({
+      internship_id: { $in: internships.map((internship) => internship._id) },
+    }).populate("internship_id");
+
+    // Combine all applications
+    const allApplications = [...jobApplications, ...internshipApplications];
+
+    // Calculate stats
+    const totalPostings = jobs.length + internships.length;
+    const totalActive =
+      jobs.filter((job) => job.status === "active").length +
+      internships.filter((internship) => internship.status === "approved").length;
+    const totalInactive =
+      jobs.filter((job) => job.status === "closed").length +
+      internships.filter((internship) => internship.status === "rejected").length;
+    const totalHired = allApplications.filter((app) => app.status === "hired").length;
+
+    // Calculate monthly hiring data
+    const monthlyHiring = [];
+    const currentYear = new Date().getFullYear();
+
+    for (let month = 0; month < 12; month++) {
+      const monthStart = new Date(currentYear, month, 1);
+      const monthEnd = new Date(currentYear, month + 1, 0);
+
+      const hiredInMonth = allApplications.filter((app) => {
+        const appDate = new Date(app.created_date);
+        return app.status === "hired" && appDate >= monthStart && appDate <= monthEnd;
+      }).length;
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+      monthlyHiring.push({
+        month: monthNames[month],
+        hired: hiredInMonth,
+      });
+    }
+
+    // Calculate monthly jobs posted data
+    const monthlyJobs = [];
+
+    for (let month = 0; month < 12; month++) {
+      const monthStart = new Date(currentYear, month, 1);
+      const monthEnd = new Date(currentYear, month + 1, 0);
+
+      const jobsInMonth = jobs.filter((job) => {
+        const jobDate = new Date(job.postedAt);
+        return jobDate >= monthStart && jobDate <= monthEnd;
+      }).length;
+
+      const internshipsInMonth = internships.filter((internship) => {
+        const internshipDate = new Date(internship.postedAt);
+        return internshipDate >= monthStart && internshipDate <= monthEnd;
+      }).length;
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+      monthlyJobs.push({
+        month: monthNames[month],
+        jobs: jobsInMonth + internshipsInMonth,
+      });
+    }
+
+    res.json({
+      stats: {
+        totalPostings,
+        totalActive,
+        totalHired,
+        totalInactive,
+      },
+      monthlyHiring,
+      monthlyJobs,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Get single job/internship by ID
 router.get("/:id", async (req, res, next) => {
   try {
