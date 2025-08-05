@@ -477,7 +477,7 @@ router.post('/auth/forgot-password', async (req, res) => {
     });
 
     // Create reset URL
-    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/p/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.CLIENT_URL}/p/reset-password/${resetToken}`;
 
     // Email content
     const mailOptions = {
