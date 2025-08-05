@@ -3,8 +3,18 @@ const mongoose = require("mongoose");
 const connectDB = async () => {
   try {
     //MONGODB_URI=mongodb://localhost:27017/careernest put this in backend/.env
-    const MONGODB_URI =
-      process.env.MONGODB_URI;
+    const MONGODB_URI = process.env.MONGODB_URI;
+
+    // Check if MONGODB_URI is set
+    if (!MONGODB_URI) {
+      console.error("❌ MONGODB_URI is not set in environment variables");
+      console.log("💡 Please check your .env file in the Careernest-server directory");
+      console.log("🔧 Expected format: MONGODB_URI=mongodb+srv://username:password@cluster...");
+      process.exit(1);
+    }
+
+    console.log("🔗 Attempting to connect to MongoDB...");
+    console.log("📊 URI:", MONGODB_URI.substring(0, 50) + "...");
 
     await mongoose.connect(MONGODB_URI, {
       useNewUrlParser: true,

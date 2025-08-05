@@ -90,6 +90,10 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     lastLoginAt: { type: Date },
     profileCompleteness: { type: Number, default: 0, min: 0, max: 100 },
+    
+    // Password reset fields
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt

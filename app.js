@@ -1,5 +1,14 @@
 const express = require("express");
-require("dotenv").config();
+const path = require("path");
+
+// Load environment variables with explicit path
+require("dotenv").config({ path: path.join(__dirname, '.env') });
+
+// Debug: Log environment variables
+console.log("🔧 Environment Variables:");
+console.log("MONGODB_URI:", process.env.MONGODB_URI ? "✅ Set" : "❌ Not set");
+console.log("NODE_ENV:", process.env.NODE_ENV || "development");
+console.log("PORT:", process.env.PORT || 5000);
 
 // Create the Express app
 const app = express();

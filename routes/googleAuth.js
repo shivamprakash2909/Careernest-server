@@ -3,6 +3,8 @@ const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -385,7 +387,28 @@ router.get('/user/password-status', authenticateJWT, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json({ hasPassword: !!(user.password && user.password.trim()) });
   } catch (err) {
+    console.error('Password status check error:', err);
     res.status(500).json({ error: 'Failed to check password status' });
+  }
+});
+
+// Public endpoint to check if user is authenticated (for frontend use)
+router.get('/user/auth-status', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.json({ authenticated: false, message: 'No token provided' });
+  }
+  
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return res.json({ authenticated: false, message: 'Invalid token format' });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    res.json({ authenticated: true, user: decoded });
+  } catch (error) {
+    res.json({ authenticated: false, message: 'Invalid or expired token' });
   }
 });
 
@@ -398,6 +421,187 @@ router.get('/user/profile', authenticateJWT, async (req, res) => {
     res.json({ user });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+});
+
+// Forgot password - Request password reset
+router.post('/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Please enter a valid email address' });
+    }
+
+    // Check email length
+    if (email.length > 254) {
+      return res.status(400).json({ error: 'Email address is too long' });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'No account found with this email address' });
+    }
+
+    // Check if user already has a valid reset token (prevent spam)
+    if (user.resetPasswordToken && user.resetPasswordExpires && user.resetPasswordExpires > Date.now()) {
+      const timeLeft = Math.ceil((user.resetPasswordExpires - Date.now()) / 60000); // minutes
+      return res.status(429).json({ 
+        error: `Password reset email already sent. Please wait ${timeLeft} minutes before requesting another.` 
+      });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+
+    // Save reset token to user
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpiry;
+    await user.save();
+
+    // Create email transporter
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    // Create reset URL
+    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/p/reset-password/${resetToken}`;
+
+    // Email content
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset Request - CareerNest',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="margin: 0; font-size: 28px;">CareerNest</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Password Reset Request</p>
+          </div>
+          <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #333; margin-bottom: 20px;">Hello ${user.name || 'there'}!</h2>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+              You requested a password reset for your CareerNest account. Click the button below to reset your password:
+            </p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${resetUrl}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                Reset Password
+              </a>
+            </div>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+              If the button doesn't work, you can copy and paste this link into your browser:
+            </p>
+            <p style="color: #667eea; word-break: break-all; margin-bottom: 20px;">
+              ${resetUrl}
+            </p>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+              This link will expire in 1 hour for security reasons.
+            </p>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+              If you didn't request this password reset, please ignore this email and your password will remain unchanged.
+            </p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+            <p style="color: #999; font-size: 12px; text-align: center;">
+              This is an automated email from CareerNest. Please do not reply to this email.
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+
+    res.json({ 
+      message: 'Password reset email sent successfully',
+      email: email 
+    });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Failed to send password reset email' });
+  }
+});
+
+// Validate reset token and get user info
+router.post('/auth/validate-reset-token', async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ error: 'Token is required' });
+    }
+
+    // Find user with valid reset token
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    res.json({ 
+      valid: true,
+      userRole: user.role,
+      email: user.email
+    });
+
+  } catch (error) {
+    console.error('Token validation error:', error);
+    res.status(500).json({ error: 'Failed to validate token' });
+  }
+});
+
+// Reset password with token
+router.post('/auth/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and new password are required' });
+    }
+
+    // Find user with valid reset token
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Update user password and clear reset token
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ 
+      message: 'Password reset successfully',
+      userRole: user.role 
+    });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
   }
 });
 
