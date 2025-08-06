@@ -68,7 +68,7 @@ const userSchema = new mongoose.Schema(
     // Common fields
     location: {
       type: String,
-      enum: ["Noida", "Delhi", "Pune", "Mumbai", "Bangalore", "Hyderabad"],
+      trim: true,
     },
     address: {
       street: { type: String, trim: true },
@@ -90,7 +90,7 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     lastLoginAt: { type: Date },
     profileCompleteness: { type: Number, default: 0, min: 0, max: 100 },
-    
+
     // Password reset fields
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
