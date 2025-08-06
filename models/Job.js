@@ -15,33 +15,56 @@ const jobSchema = new mongoose.Schema(
     location: {
       type: String,
       required: true,
-      enum: ["Noida", "Delhi", "Pune", "Mumbai", "Bangalore", "Hyderabad"],
+      enum: ["Noida", "Delhi", "Pune", "Mumbai", "Bangalore", "Hyderabad", "Remote", "Work from Home"],
     },
+    // Salary/Compensation
     salary_min: {
       type: Number,
     },
     salary_max: {
       type: Number,
     },
-    stipend: {
-      type: String, // For internships - can be used instead of salary_min/max
+    salary_type: {
+      type: String,
+      enum: ["Per Annum", "Per Month", "Per Hour", "Per Project"],
+      default: "Per Annum",
     },
-    salary: {
-      type: Number,
+    salary_currency: {
+      type: String,
+      default: "INR",
     },
+    // Job Details
     job_type: {
       type: String,
       required: true,
-      enum: ["Full-time", "Part-time", "Contract", "Internship"],
+      enum: ["Full-time", "Part-time", "Contract", "Internship", "Freelance"],
     },
     experience_level: {
       type: String,
-      enum: ["Entry Level", "Mid Level", "Senior Level", "Executive"],
+      enum: ["Fresher", "Entry Level", "Mid Level", "Senior Level", "Executive"],
     },
+    experience_years_min: {
+      type: Number,
+    },
+    experience_years_max: {
+      type: Number,
+    },
+    // Education Requirements
+    education_level: {
+      type: String,
+      enum: ["High School", "Diploma", "Bachelor's Degree", "Master's Degree", "PhD", "Any"],
+    },
+    // Job Description
     description: {
       type: String,
       required: true,
     },
+    responsibilities: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
     requirements: [
       {
         type: String,
@@ -60,14 +83,39 @@ const jobSchema = new mongoose.Schema(
         trim: true,
       },
     ],
+    // Work Arrangement
     remote_option: {
       type: Boolean,
       default: false,
     },
+    work_from_home: {
+      type: Boolean,
+      default: false,
+    },
+    // Application Details
+    application_deadline: {
+      type: Date,
+    },
+    number_of_openings: {
+      type: Number,
+      default: 1,
+    },
+    // Company Information
+    company_logo: {
+      type: String, // Company logo URL
+    },
+    company_website: {
+      type: String,
+    },
+    company_description: {
+      type: String,
+    },
+    // Posted By
     posted_by: {
       type: String, // Email of recruiter who posted
       required: true,
     },
+    // Status and Approval
     status: {
       type: String,
       enum: ["active", "closed", "draft"],
@@ -88,9 +136,6 @@ const jobSchema = new mongoose.Schema(
       comments: {
         type: String, // Admin comments for approval/rejection
       },
-    },
-    company_logo: {
-      type: String, // Company logo URL
     },
     duration: {
       type: String, // For internships

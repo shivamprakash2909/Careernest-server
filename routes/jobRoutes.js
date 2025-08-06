@@ -242,13 +242,48 @@ router.get("/:id", async (req, res, next) => {
 // Create new job/internship
 router.post("/", authenticateJWT, async (req, res, next) => {
   try {
-    const job = new Job(req.body);
+    // Validate required fields
+    const { title, company, location, job_type, description } = req.body;
+
+    if (!title || !company || !location || !job_type || !description) {
+      return res.status(400).json({
+        error: "Missing required fields: title, company, location, job_type, and description are required",
+      });
+    }
+
+    // Process array fields
+    const processedData = {
+      ...req.body,
+      responsibilities: Array.isArray(req.body.responsibilities)
+        ? req.body.responsibilities
+        : req.body.responsibilities
+        ? req.body.responsibilities.split(",").map((item) => item.trim())
+        : [],
+      requirements: Array.isArray(req.body.requirements)
+        ? req.body.requirements
+        : req.body.requirements
+        ? req.body.requirements.split(",").map((item) => item.trim())
+        : [],
+      skills: Array.isArray(req.body.skills)
+        ? req.body.skills
+        : req.body.skills
+        ? req.body.skills.split(",").map((item) => item.trim())
+        : [],
+      benefits: Array.isArray(req.body.benefits)
+        ? req.body.benefits
+        : req.body.benefits
+        ? req.body.benefits.split(",").map((item) => item.trim())
+        : [],
+    };
+
+    const job = new Job(processedData);
     await job.save();
     res.status(201).json({
       message: "Job created successfully and pending admin approval",
       job,
     });
   } catch (error) {
+    console.error("Job creation error:", error);
     next(error);
   }
 });
