@@ -15,7 +15,6 @@ const jobSchema = new mongoose.Schema(
     location: {
       type: String,
       required: true,
-      enum: ["Noida", "Delhi", "Pune", "Mumbai", "Bangalore", "Hyderabad", "Remote", "Work from Home"],
     },
     // Salary/Compensation
     salary_min: {
@@ -26,7 +25,7 @@ const jobSchema = new mongoose.Schema(
     },
     salary_type: {
       type: String,
-      enum: ["Per Annum", "Per Month", "Per Hour", "Per Project"],
+      enum: ["Per Annum", "Per Month"],
       default: "Per Annum",
     },
     salary_currency: {
@@ -37,7 +36,7 @@ const jobSchema = new mongoose.Schema(
     job_type: {
       type: String,
       required: true,
-      enum: ["Full-time", "Part-time", "Contract", "Internship", "Freelance"],
+      enum: ["Full-time", "Part-time"],
     },
     experience_level: {
       type: String,
@@ -52,7 +51,7 @@ const jobSchema = new mongoose.Schema(
     // Education Requirements
     education_level: {
       type: String,
-      enum: ["High School", "Diploma", "Bachelor's Degree", "Master's Degree", "PhD", "Any"],
+      required: true,
     },
     // Job Description
     description: {

@@ -18,7 +18,7 @@ async function setupAdmin() {
     // Create default admin
     const admin = new Admin({
       email: "admin@careernest.com",
-      password: "admin123", // This will be hashed automatically
+      password: "careernestadmin123", // This will be hashed automatically
       name: "CareerNest Admin",
       role: "super_admin",
       permissions: {
@@ -31,8 +31,8 @@ async function setupAdmin() {
 
     await admin.save();
     console.log("✅ Admin created successfully!");
-    console.log("Email: admin@careernest.com");
-    console.log("Password: admin123");
+    console.log(`Email:${admin.email}`);
+    console.log(`Password:careernestadmin123`);
     console.log("Please change the password after first login.");
 
     process.exit(0);
@@ -42,4 +42,4 @@ async function setupAdmin() {
   }
 }
 
-setupAdmin(); 
+setupAdmin();
