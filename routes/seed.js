@@ -59,29 +59,9 @@ router.post("/internships/create", authenticateJWT, async (req, res) => {
       });
     }
 
-    // Process array fields
+    // Process array fields (only for fields that should remain as arrays)
     const processedData = {
       ...req.body,
-      responsibilities: Array.isArray(req.body.responsibilities)
-        ? req.body.responsibilities
-        : req.body.responsibilities
-        ? req.body.responsibilities.split(",").map((item) => item.trim())
-        : [],
-      requirements: Array.isArray(req.body.requirements)
-        ? req.body.requirements
-        : req.body.requirements
-        ? req.body.requirements.split(",").map((item) => item.trim())
-        : [],
-      skills: Array.isArray(req.body.skills)
-        ? req.body.skills
-        : req.body.skills
-        ? req.body.skills.split(",").map((item) => item.trim())
-        : [],
-      perks: Array.isArray(req.body.perks)
-        ? req.body.perks
-        : req.body.perks
-        ? req.body.perks.split(",").map((item) => item.trim())
-        : [],
     };
 
     // Always set posted_by to the authenticated recruiter's email

@@ -11,22 +11,11 @@ const internshipSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    // Internship Details
-    internship_type: {
-      type: String,
-      enum: [
-        "Summer Internship",
-        "Winter Internship",
-        "Semester Internship",
-        "Project Internship",
-        "Research Internship",
-      ],
-      default: "Summer Internship",
-    },
+
     // Location and Work Arrangement
     location: {
       type: String,
-      enum: ["Noida", "Delhi", "Pune", "Mumbai", "Bangalore", "Hyderabad", "Remote", "Work from Home"],
+      required: true,
     },
     remote_option: {
       type: Boolean,
@@ -48,63 +37,51 @@ const internshipSchema = new mongoose.Schema(
       type: Date,
     },
     // Stipend/Compensation
-    stipend: {
-      type: String,
-    },
     stipend_type: {
       type: String,
-      enum: ["Fixed", "Performance Based", "Unpaid", "Stipend + Performance Bonus"],
+      enum: ["Fixed", "Unpaid"],
       default: "Fixed",
     },
     stipend_amount_min: {
       type: Number,
+      min: 0,
     },
     stipend_amount_max: {
       type: Number,
+      min: 0,
     },
     // Education Requirements
     education_level: {
       type: String,
-      enum: ["High School", "Diploma", "Bachelor's Degree", "Master's Degree", "PhD", "Any"],
-    },
-    academic_year: {
-      type: String,
-      enum: ["1st Year", "2nd Year", "3rd Year", "4th Year", "Final Year", "Any"],
+      required: true,
     },
     // Internship Description
     description: {
       type: String,
       required: true,
     },
-    responsibilities: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-    requirements: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-    skills: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-    // Perks and Benefits
-    perks: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-    // Application Details
-    application_deadline: {
-      type: Date,
+    responsibilities: {
+      type: String,
+      required: true,
+      trim: true,
     },
+    requirements: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    skills: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    // Perks and Benefits
+    perks: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     number_of_openings: {
       type: Number,
       default: 1,
@@ -150,5 +127,15 @@ const internshipSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Custom validation for stipend range
+internshipSchema.pre("save", function (next) {
+  if (this.stipend_amount_min && this.stipend_amount_max) {
+    if (this.stipend_amount_min > this.stipend_amount_max) {
+      return next(new Error("Minimum stipend cannot be greater than maximum stipend"));
+    }
+  }
+  next();
+});
 
 module.exports = mongoose.model("Internship", internshipSchema);
