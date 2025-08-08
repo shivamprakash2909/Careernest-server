@@ -19,9 +19,12 @@ const jobSchema = new mongoose.Schema(
     // Salary/Compensation
     salary_min: {
       type: Number,
+      required: true,
+      min: 0,
     },
     salary_max: {
       type: Number,
+      min: 0,
     },
     salary_type: {
       type: String,
@@ -44,9 +47,11 @@ const jobSchema = new mongoose.Schema(
     },
     experience_years_min: {
       type: Number,
+      min: 0,
     },
     experience_years_max: {
       type: Number,
+      min: 0,
     },
     // Education Requirements
     education_level: {
@@ -87,13 +92,9 @@ const jobSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    work_from_home: {
+    work_from_office: {
       type: Boolean,
       default: false,
-    },
-    // Application Details
-    application_deadline: {
-      type: Date,
     },
     number_of_openings: {
       type: Number,
