@@ -28,6 +28,7 @@ const internshipSchema = new mongoose.Schema(
     // Duration and Timing
     duration: {
       type: String,
+      enum: ["1 week", "2 weeks", "3 weeks", "1 month", "2 months", "3 months", "6 months"],
       required: true,
     },
     start_date: {
