@@ -88,6 +88,25 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+// Check if an application exists
+router.get("/check", authenticateJWT, async (req, res, next) => {
+  try {
+    const { applicant_email, job_id, internship_id, application_type } = req.query;
+
+    let filter = { applicant_email, application_type };
+    if (application_type === "job") {
+      filter.job_id = job_id;
+    } else {
+      filter.internship_id = internship_id;
+    }
+
+    const existingApplication = await Application.findOne(filter);
+    res.json({ hasApplied: !!existingApplication });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Get single application by ID
 router.get("/:id", authenticateJWT, async (req, res, next) => {
   try {
@@ -106,7 +125,7 @@ router.get("/:id", authenticateJWT, async (req, res, next) => {
 // Create new application (for both jobs and internships)
 router.post("/", authenticateJWT, async (req, res, next) => {
   try {
-    const { job_id, internship_id, application_type } = req.body;
+    const { job_id, internship_id, application_type, applicant_email } = req.body;
 
     // Validate application type and corresponding ID
     if (application_type === "job") {
@@ -118,6 +137,17 @@ router.post("/", authenticateJWT, async (req, res, next) => {
       const job = await Job.findById(job_id);
       if (!job) {
         return res.status(404).json({ error: "Job not found" });
+      }
+
+      // Check if the user has already applied for this job
+      const existingApplication = await Application.findOne({
+        applicant_email,
+        job_id,
+        application_type: "job",
+      });
+
+      if (existingApplication) {
+        return res.status(409).json({ error: "You have already applied for this job" });
       }
 
       // Add job details to application
@@ -143,6 +173,17 @@ router.post("/", authenticateJWT, async (req, res, next) => {
       const internship = await Internship.findById(internship_id);
       if (!internship) {
         return res.status(404).json({ error: "Internship not found" });
+      }
+
+      // Check if the user has already applied for this internship
+      const existingApplication = await Application.findOne({
+        applicant_email,
+        internship_id,
+        application_type: "internship",
+      });
+
+      if (existingApplication) {
+        return res.status(409).json({ error: "You have already applied for this internship" });
       }
 
       // Add internship details to application
