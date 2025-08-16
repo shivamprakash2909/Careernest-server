@@ -224,6 +224,59 @@ router.post("/auth/student/register", async (req, res) => {
 
     try {
       await user.save();
+
+      // Email sending logic for student registration
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Welcome to CareerNest - Registration Complete!",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+              <h1 style="margin: 0; font-size: 28px;">CareerNest</h1>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">Registration Successful</p>
+            </div>
+            <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
+              <h2 style="color: #333; margin-bottom: 20px;">Hello ${user.name || "there"}!</h2>
+              <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                Thank you for registering with CareerNest as a student. Your account has been successfully created.
+              </p>
+              <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                You can now log in and start exploring internship and job opportunities.
+              </p>
+              // <div style="text-align: center; margin: 30px 0;">
+              //   <a href="${process.env.CLIENT_URL}/p/studentauth" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+              //     Go to Login
+              //   </a>
+              // </div>
+              <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                If you have any questions, feel free to contact our support team.
+              </p>
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+              <p style="color: #999; font-size: 12px; text-align: center;">
+                This is an automated email from CareerNest. Please do not reply to this email.
+              </p>
+            </div>
+          </div>
+        `,
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log(`Registration email sent to ${email}`);
+      } catch (emailError) {
+        console.error(`Failed to send registration email to ${email}:`, emailError);
+        // Optionally, you might want to log this error but still allow registration to complete
+      }
+
     } catch (err) {
       if (err.code === 11000) {
         return res.status(409).json({ error: "Email already registered" });
@@ -290,6 +343,59 @@ router.post("/auth/recruiter/register", async (req, res) => {
 
     try {
       await user.save();
+
+      // Email sending logic for recruiter registration
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Welcome to CareerNest - Registration Complete!",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+              <h1 style="margin: 0; font-size: 28px;">CareerNest</h1>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">Registration Successful</p>
+            </div>
+            <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
+              <h2 style="color: #333; margin-bottom: 20px;">Hello ${user.name || "there"}!</h2>
+              <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                Thank you for registering with CareerNest as a recruiter. Your account has been successfully created.
+              </p>
+              <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                You can now log in and start posting jobs and internships.
+              </p>
+              // <div style="text-align: center; margin: 30px 0;">
+              //   <a href="${process.env.CLIENT_URL}/p/studentauth" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+              //     Go to Login
+              //   </a>
+              // </div>
+              <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                If you have any questions, feel free to contact our support team.
+              </p>
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+              <p style="color: #999; font-size: 12px; text-align: center;">
+                This is an automated email from CareerNest. Please do not reply to this email.
+              </p>
+            </div>
+          </div>
+        `,
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log(`Registration email sent to ${email}`);
+      } catch (emailError) {
+        console.error(`Failed to send registration email to ${email}:`, emailError);
+        // Optionally, you might want to log this error but still allow registration to complete
+      }
+
     } catch (err) {
       if (err.code === 11000) {
         return res.status(409).json({ error: "Email already registered" });
