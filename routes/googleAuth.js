@@ -252,11 +252,13 @@ router.post("/auth/student/register", async (req, res) => {
               <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
                 You can now log in and start exploring internship and job opportunities.
               </p>
-              // <div style="text-align: center; margin: 30px 0;">
-              //   <a href="${process.env.CLIENT_URL}/p/studentauth" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-              //     Go to Login
-              //   </a>
-              // </div>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${
+                  process.env.CLIENT_URL
+                }/p/studentauth" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                  Go to Login
+                </a>
+              </div>
               <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
                 If you have any questions, feel free to contact our support team.
               </p>
@@ -276,7 +278,6 @@ router.post("/auth/student/register", async (req, res) => {
         console.error(`Failed to send registration email to ${email}:`, emailError);
         // Optionally, you might want to log this error but still allow registration to complete
       }
-
     } catch (err) {
       if (err.code === 11000) {
         return res.status(409).json({ error: "Email already registered" });
@@ -372,7 +373,9 @@ router.post("/auth/recruiter/register", async (req, res) => {
                 You can now log in and start posting jobs and internships.
               </p>
               // <div style="text-align: center; margin: 30px 0;">
-              //   <a href="${process.env.CLIENT_URL}/p/studentauth" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+              //   <a href="${
+                process.env.CLIENT_URL
+              }/p/studentauth" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
               //     Go to Login
               //   </a>
               // </div>
@@ -395,7 +398,6 @@ router.post("/auth/recruiter/register", async (req, res) => {
         console.error(`Failed to send registration email to ${email}:`, emailError);
         // Optionally, you might want to log this error but still allow registration to complete
       }
-
     } catch (err) {
       if (err.code === 11000) {
         return res.status(409).json({ error: "Email already registered" });
