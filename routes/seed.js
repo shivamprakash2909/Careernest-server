@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Internship = require("../models/Internship");
 const { authenticateJWT } = require("../middleware/auth");
+const Notification = require("../models/Notification");
 
 // Seed 3 sample internships
 router.post("/seed-internships", async (req, res) => {
@@ -102,6 +103,28 @@ router.put("/internships/:id/approve", async (req, res) => {
 
     if (!internship) {
       return res.status(404).json({ error: "Internship not found" });
+    }
+
+    // Notify recruiter about approval/rejection
+    try {
+      if (internship && internship.posted_by && ["approved", "rejected"].includes(status)) {
+        await Notification.create({
+          recipient_email: internship.posted_by,
+          recipient_role: "recruiter",
+          title: status === "approved" ? "Internship Approved" : "Internship Rejected",
+          message:
+            status === "approved"
+              ? `Your internship posting "${internship.title}" has been approved by admin.`
+              : `Your internship posting "${internship.title}" has been rejected by admin.${
+                  comments ? ` Reason: ${comments}` : ""
+                }`,
+          type: "internship_approval",
+          priority: status === "approved" ? "medium" : "high",
+          meta: { internshipId: internship._id.toString(), status },
+        });
+      }
+    } catch (notifyErr) {
+      console.error("Failed to create internship approval notification:", notifyErr);
     }
 
     res.json({

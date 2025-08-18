@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 
 // Load environment variables with explicit path
-require("dotenv").config({ path: path.join(__dirname, '.env') });
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 // Debug: Log environment variables
 console.log("🔧 Environment Variables:");
@@ -24,6 +24,7 @@ const indexRoutes = require("./routes/index");
 const userRoutes = require("./routes/userroutes");
 const jobRoutes = require("./routes/jobRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 const seedRoutes = require("./routes/seed");
 const googleAuthRoutes = require("./routes/googleAuth");
 const { router: adminAuthRoutes } = require("./routes/adminAuth");
@@ -38,6 +39,7 @@ app.use("/api", indexRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/applications", applicationRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin", adminAuthRoutes);
 app.use("/api", seedRoutes);
 app.use("/api", googleAuthRoutes);

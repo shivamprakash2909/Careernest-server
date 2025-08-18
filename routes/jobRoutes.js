@@ -2,6 +2,7 @@ const express = require("express");
 const Job = require("../models/Job");
 const Internship = require("../models/Internship");
 const { authenticateJWT } = require("../middleware/auth");
+const Notification = require("../models/Notification");
 const router = express.Router();
 
 // Get all jobs/internships (only approved ones for students)
@@ -310,6 +311,26 @@ router.put("/:id/approve", async (req, res, next) => {
 
     if (!job) {
       return res.status(404).json({ error: "Job not found" });
+    }
+
+    // Create a notification for the recruiter who posted this job
+    try {
+      if (job && job.posted_by && ["approved", "rejected"].includes(approval_status)) {
+        await Notification.create({
+          recipient_email: job.posted_by,
+          recipient_role: "recruiter",
+          title: approval_status === "approved" ? "Job Approved" : "Job Rejected",
+          message:
+            approval_status === "approved"
+              ? `Your job posting "${job.title}" has been approved by admin.`
+              : `Your job posting "${job.title}" has been rejected by admin.${comments ? ` Reason: ${comments}` : ""}`,
+          type: "job_approval",
+          priority: approval_status === "approved" ? "medium" : "high",
+          meta: { jobId: job._id.toString(), approval_status },
+        });
+      }
+    } catch (notifyErr) {
+      console.error("Failed to create job approval notification:", notifyErr);
     }
 
     res.json({

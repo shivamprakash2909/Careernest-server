@@ -4,6 +4,7 @@ const Job = require("../models/Job");
 const Internship = require("../models/Internship");
 const { authenticateJWT } = require("../middleware/auth");
 const router = express.Router();
+const Notification = require("../models/Notification");
 
 // Get all applications (for recruiters - only their posted jobs/internships)
 router.get("/", async (req, res, next) => {
@@ -234,6 +235,43 @@ router.patch("/:id/status", async (req, res, next) => {
 
     if (!application) {
       return res.status(404).json({ error: "Application not found" });
+    }
+
+    // If hired, notify the student (applicant)
+    try {
+      if (application && status === "hired") {
+        let titleText = "Your application was successful";
+        let messageText = "Congratulations! You have been hired.";
+        let meta = { applicationId: application._id.toString(), application_type: application.application_type };
+
+        if (application.application_type === "job" && application.job_id) {
+          const job = await Job.findById(application.job_id).select("title company");
+          if (job) {
+            titleText = `Hired for ${job.title}`;
+            messageText = `Congratulations! You have been hired for the position of "${job.title}" at ${job.company}.`;
+            meta.jobId = job._id.toString();
+          }
+        } else if (application.application_type === "internship" && application.internship_id) {
+          const internship = await Internship.findById(application.internship_id).select("title company");
+          if (internship) {
+            titleText = `Selected for ${internship.title}`;
+            messageText = `Great news! You have been selected for the internship "${internship.title}" at ${internship.company}.`;
+            meta.internshipId = internship._id.toString();
+          }
+        }
+
+        await Notification.create({
+          recipient_email: application.applicant_email,
+          recipient_role: "student",
+          title: titleText,
+          message: messageText,
+          type: "application_hired",
+          priority: "high",
+          meta,
+        });
+      }
+    } catch (notifyErr) {
+      console.error("Failed to create hire notification:", notifyErr);
     }
 
     res.json({
