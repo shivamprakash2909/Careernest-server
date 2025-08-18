@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
         "Master's Degree",
         "PhD",
         "Professional Certification",
+        "Other",
       ],
     },
     field_of_study: { type: String, trim: true },

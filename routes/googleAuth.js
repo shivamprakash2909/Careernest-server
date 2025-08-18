@@ -68,7 +68,7 @@ router.post("/auth/google", async (req, res) => {
         role: user_type,
         phone: "", // Default empty string
         location: "", // Default location
-        education_level: "", // Default education level
+        education_level: "Other", // Default education level
         skills: [], // Default empty array
       });
       try {
